@@ -1,0 +1,43 @@
+// Sample_instructions.js — instr_set_full.pdf (canonical full instruction set)
+
+const sampleInstructions = [
+    { name: "NOT", description: "Bitwise NOT.", syntax: "NOT Rd, Rs", example: "NOT R4, R2", useLine: "NOT R3, R3" },
+    { name: "XOR", description: "Bitwise XOR.", syntax: "XOR Rd, Rs, Rt", example: "XOR R4, R2, R3", useLine: "XOR R3, R3, R3" },
+    { name: "OR", description: "Bitwise OR.", syntax: "OR Rd, Rs, Rt", example: "OR R4, R2, R3", useLine: "OR R3, R3, R3" },
+    { name: "AND", description: "Bitwise AND.", syntax: "AND Rd, Rs, Rt", example: "AND R4, R2, R3", useLine: "AND R3, R3, R3" },
+    { name: "MKB", description: "Mask one bit (keep only that bit).", syntax: "MKB Rd, Rs, #bit", example: "MKB R2, R3, #0", useLine: "MKB R3, R3, #0" },
+    { name: "INB", description: "Invert one bit.", syntax: "INB Rd, Rs, #bit", example: "INB R2, R3, #1", useLine: "INB R3, R3, #1" },
+    { name: "SEB", description: "Set one bit.", syntax: "SEB Rd, Rs, #bit", example: "SEB R2, R3, #2", useLine: "SEB R3, R3, #2" },
+    { name: "CLB", description: "Clear one bit.", syntax: "CLB Rd, Rs, #bit", example: "CLB R2, R3, #3", useLine: "CLB R3, R3, #3" },
+    { name: "SHL", description: "Shift left by one (from Rs into Rd).", syntax: "SHL Rd, Rs", example: "SHL R2, R3", useLine: "SHL R3, R3" },
+    { name: "SHR", description: "Shift right by one (from Rs into Rd).", syntax: "SHR Rd, Rs", example: "SHR R2, R3", useLine: "SHR R3, R3" },
+    { name: "ROL", description: "Rotate left through carry.", syntax: "ROL Rd, Rs", example: "ROL R2, R3", useLine: "ROL R3, R3" },
+    { name: "ROR", description: "Rotate right through carry.", syntax: "ROR Rd, Rs", example: "ROR R2, R3", useLine: "ROR R3, R3" },
+    { name: "SUB", description: "Subtract: Rd = Rs − Rt.", syntax: "SUB Rd, Rs, Rt", example: "SUB R4, R2, R3", useLine: "SUB R3, R3, R3" },
+    { name: "ADD", description: "Add: Rd = Rs + Rt.", syntax: "ADD Rd, Rs, Rt", example: "ADD R4, R2, R3", useLine: "ADD R3, R3, R3" },
+    { name: "SBB", description: "Subtract with borrow.", syntax: "SBB Rd, Rs, Rt", example: "SBB R2, R3, R4", useLine: "SBB R3, R3, R3" },
+    { name: "ADC", description: "Add with carry.", syntax: "ADC Rd, Rs, Rt", example: "ADC R2, R3, R4", useLine: "ADC R3, R3, R3" },
+    { name: "LDL", description: "Load low byte into register.", syntax: "LDL Rn, #0xYY", example: "LDL R2, #0xA", useLine: "LDL R3, #0xFF" },
+    { name: "LDH", description: "Load high byte into register.", syntax: "LDH Rn, #0xYY", example: "LDH R2, #0xFF", useLine: "LDH R3, #0xFF" },
+    { name: "STO", description: "Store to internal memory: Mem[Rs] = Rt.", syntax: "STO [Rs], Rt", example: "STO [R2], R3", useLine: "STO [R3], R3" },
+    { name: "LDD", description: "Load from internal memory: Rd = Mem[Rs].", syntax: "LDD Rd, [Rs]", example: "LDD R4, [R2]", useLine: "LDD R3, [R3]" },
+    { name: "OUT", description: "Output to I/O: IO[Rs] = Rt.", syntax: "OUT [Rs], Rt", example: "OUT [R2], R3", useLine: "OUT [R3], R3" },
+    { name: "IN", description: "Input from I/O: Rd = IO[Rs].", syntax: "IN Rd, [Rs]", example: "IN R4, [R2]", useLine: "IN R3, [R3]" },
+    { name: "PSH", description: "Push register onto stack.", syntax: "PSH Rt", example: "PSH R2", useLine: "PSH R3" },
+    { name: "POP", description: "Pop stack into register.", syntax: "POP Rd", example: "POP R2", useLine: "POP R3" },
+    { name: "JZ", description: "Jump if Zero flag set.", syntax: "JZ label", example: "JZ done", useLine: "JZ 0x0000" },
+    { name: "JC", description: "Jump if Carry flag set.", syntax: "JC label", example: "JC carry", useLine: "JC 0x0000" },
+    { name: "JNZ", description: "Jump if Zero flag clear.", syntax: "JNZ label", example: "JNZ loop", useLine: "JNZ 0x0000" },
+    { name: "JNC", description: "Jump if Carry flag clear.", syntax: "JNC label", example: "JNC next", useLine: "JNC 0x0000" },
+    { name: "JS", description: "Jump to subroutine (push return address).", syntax: "JS label", example: "JS sub", useLine: "JS 0x0000" },
+    { name: "JMP", description: "Unconditional jump.", syntax: "JMP label", example: "JMP end", useLine: "JMP 0x0000" },
+    { name: "BRA", description: "Conditional branch (PC-relative).", syntax: "BRA Bxxx, label", example: "BRA B000, loop", useLine: "BRA B000, 0x0000" },
+    { name: "RTS", description: "Return from subroutine.", syntax: "RTS", example: "RTS", useLine: "RTS" },
+    { name: "RTI", description: "Return from interrupt.", syntax: "RTI", example: "RTI", useLine: "RTI" },
+    { name: "HLT", description: "Halt execution.", syntax: "HLT", example: "HLT", useLine: "HLT" },
+    { name: "NOP", description: "No operation (alias: LDL R0, #imm).", syntax: "NOP", example: "NOP", useLine: "NOP" },
+    { name: "SEI", description: "Enable interrupts (alias).", syntax: "SEI", example: "SEI", useLine: "SEI" },
+    { name: "CLI", description: "Disable interrupts (alias).", syntax: "CLI", example: "CLI", useLine: "CLI" }
+];
+
+window.sampleInstructions = sampleInstructions;
