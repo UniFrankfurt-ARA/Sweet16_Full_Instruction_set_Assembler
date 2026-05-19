@@ -1,77 +1,91 @@
-# SWEET16 ASM Simulator — Full Instruction Set (Web, no install)
+# Sweet16_Full_Instruction_set_Assembler — SWEET16 Simulator (Full Instruction Set)
 
-A browser-based **SWEET16** assembly editor + converter + step-by-step simulator implementing the **canonical full instruction set** from `instr_set_full.pdf` (`ADD`, `SUB`, `SHL`, `PSH`/`POP`, `STO [Rs], Rt`, `LDD Rd, [Rs]`, I/O, etc.). The UI matches **Sweeter16_RISC**; this project uses the **full** ISA only (no `MUL`/`DIV` extensions — those belong in **Sweet32_Complex**). Paste ASM, convert, and step through execution while watching registers, flags, stack, and memory.
+**This project — FULL** (complete instruction set, including everything in RISC plus the rest): [https://unifrankfurt-ara.github.io/Sweet16_Full_Instruction_set_Assembler/](https://unifrankfurt-ara.github.io/Sweet16_Full_Instruction_set_Assembler/)
 
-This repo is **pure static HTML/CSS/JS** (no build step).
+**Also available:**
 
-## Features
+- **RISC** (reduced instruction set for core teaching): [https://unifrankfurt-ara.github.io/Sweet16-ASM/](https://unifrankfurt-ara.github.io/Sweet16-ASM/)
+- **EXTENDED** (full ISA + MUL, DIV, PSH/POP-style extras and more): [https://unifrankfurt-ara.github.io/Sweeter16_ExtendedPlus/](https://unifrankfurt-ara.github.io/Sweeter16_ExtendedPlus/)
 
-- **ASM editor + conversion**: convert input ASM to a memory-mapped program view.
-- **Step execution**: run one instruction at a time (“Run Next”).
-- **State visualization**:
-  - **Registers** (R0–R7)
-  - **Instruction Pointer (IP)** and **Stack Pointer (SP)**
-  - **Carry Flag (CF)** and **Zero Flag (ZF)**
-  - **Stack view** and **User memory**
-- **Learning helpers**: tabs for **Sample Programs**, **Instruction Set**, and **User Manual**.
+Use **FULL** here for the canonical `instr_set_full` ISA. Switch to **RISC** for the smaller list, or **EXTENDED** for extra mnemonics.
 
-## Quick start (run locally)
+---
 
-### Option A: just open the file
+## About this project (Full instruction set)
 
-Open `index.html` in your browser.
+**Sweet16_Full_Instruction_set_Assembler** is a browser-based assembler and step-by-step simulator for the **canonical full SWEET16 instruction set** (`instr_set_full.pdf`). It implements everything in the reduced RISC list **and** the remaining instructions: arithmetic (`ADD`, `SUB`), shifts (`SHL`, `SHR`), single-bit operations (`MKB`, `INB`, `SEB`, `CLB`), memory and I/O with bracket syntax (`STO [Rs], Rt`, `LDD Rd, [Rs]`, `OUT`, `IN`), stack (`PSH`, `POP`), subroutine/interrupt returns (`RTS`, `RTI`), and more.
 
-### Option B (recommended): run a tiny local web server
+Pure static **HTML / CSS / JavaScript** — no build step.
 
-Some browsers behave better when opened via `http://` instead of `file://`.
+### Full ISA highlights (vs RISC)
+
+| Area | Examples in this project |
+|------|---------------------------|
+| Arithmetic | `ADD`, `SUB`, `ADC`, `SBB` |
+| Shifts | `SHL`, `SHR`, `ROL`, `ROR` |
+| Bit manipulation | `MKB`, `INB`, `SEB`, `CLB` |
+| Memory / I/O | `STO`, `LDD`, `OUT`, `IN` |
+| Stack | **`PSH`, `POP`** (hardware stack in data memory) |
+| Jumps | `JZ`, `JC`, `JNZ`, `JNC`, `JS`, `JMP`, `BRA`, `HLT` |
+| Aliases | `NOP`, `SEI`, `CLI` (expanded to `LDL` tricks) |
+
+The **machine-code column** uses `machineCode.js` aligned with `docs/instr_set_full.tex` (LaTeX source of the opcode table). Build PDF locally: `cd docs && pdflatex instr_set_full.tex`.
+
+### Main features
+
+- ASM editor with `#DEF` preprocessor (`AliasResolver.js`)
+- **Convert** + **Run Next** / **Run All** with register, flag, stack, and user-memory views
+- Hex per instruction (`0x….`) for all full-ISA mnemonics
+- Sample programs including **Full ISA Coverage** test
+- EN/DE UI strings
+
+### Quick start (local)
 
 ```bash
-cd Sweeter16
+cd Sweet16_Full_Instruction_set_Assembler
 python3 -m http.server 8080
 ```
 
-Then open `http://localhost:8080` and click `index.html`.
+Open [http://localhost:8080/index.html](http://localhost:8080/index.html).
 
-## How to use
+Published demo: [https://unifrankfurt-ara.github.io/Sweet16_Full_Instruction_set_Assembler/](https://unifrankfurt-ara.github.io/Sweet16_Full_Instruction_set_Assembler/)
 
-1. **Paste ASM** into the left “Input ASM” textarea.
-2. Click **Convert** to parse/convert the program into the memory-mapped view.
-3. Click **Run Next** to execute one instruction at a time.
-4. Watch updates in:
-   - **Registers**, **IP/SP**, **CF/ZF**
-   - **Stack**
-   - **User Memory**
-5. (Optional) Use **Sample Programs / Instruction Set / User Manual** tabs for reference.
+### How to use
 
-### Adding user memory content
+1. Paste ASM into **Input ASM** (supports `STO [R2], R3`, `LDLO`/`LDHI`, labels, `#DEF`).
+2. Click **Convert** to assemble.
+3. **Run Next** to step; watch **IP**, **SP**, flags, stack, and **machine code**.
+4. Use **Sample Programs / Instruction Set / User Manual** tabs for reference.
+5. Copy machine-code column or export — lines without a hardware word are omitted from clipboard export if marked `NONE` (not used in full ISA when encoder is loaded).
 
-Use the “User Memory” input field format shown in the UI (example placeholder):
+### Project structure
 
-- `(8:10)` adds content `10` at memory address `0008H`
+| File | Role |
+|------|------|
+| `index.html` | Main UI |
+| `AliasResolver.js` | `#DEF`, comments, label splitting |
+| `assembler.js` | Full ISA parse + normalize |
+| `machineCode.js` | 16-bit word encoder (`instr_set_full`) |
+| `simulator.js` | Execution + hex column |
+| `script.js` | UI, tabs, hex export |
+| `docs/instr_set_full.tex` | Opcode / bit-layout reference |
+| `Sample_*.js`, `i18n/` | Samples and translations |
 
-## Project structure
+### Relation to RISC and Extended
 
-- `index.html`: main UI for the SWEETER16 simulator
-- `style.css`: main UI styling
-- `script.js`: UI wiring, tab switching, event handlers
-- `assembler.js`: ASM parsing / conversion logic
-- `simulator.js`: instruction execution + CPU state updates
-- `Sample_program.js`: sample programs displayed in the UI
-- `Sample_instructions.js`: instruction set information displayed in the UI
-- `UserManual.js`: user manual content for the in-app “User Manual” tab
-- `manual.html`, `style2.css`: standalone manual page
-- `program.asm`: example ASM program
+- **RISC project** omits `ADD`/`SUB`/stack/I/O bit-ops; uses `ADC`/`SBB` and teaching-specific `STR` idioms.
+- **Extended project** adds this full set **plus** simulator-only instructions (`MUL`, `DIV`, `CMP`, `STOA`, …) — use Extended only when you need those extras.
 
-## Contributing / feedback
+### Contributing / feedback
 
-- **Issues**: bug reports and feature requests are welcome.
-- **Pull requests**: also welcome; please keep changes focused and include a brief test/usage note.
+Issues and pull requests welcome. Please test with the **Full ISA Coverage** sample when changing encoding.
 
-## License
+### License
 
-No license file is currently included in this repository. If you intend others to reuse/modify/distribute this project, consider adding a `LICENSE` file.
+No `LICENSE` file is included yet. Add one if you plan redistribution.
 
-## Author
+### Author
 
-Dr. Gautam Dange  
+**Dr. Gautam Dange**  
+FIAS / Goethe University Frankfurt  
 Email: dange@fias.uni-frankfurt.de
