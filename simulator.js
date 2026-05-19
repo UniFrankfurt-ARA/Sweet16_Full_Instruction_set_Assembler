@@ -596,85 +596,15 @@ function updateSourceDisplay() {
 }
 
 function buildProgramDisplayHtml() {
-    const toHexWord = (w) => `0x${(w & 0xFFFF).toString(16).toUpperCase().padStart(4, "0")}`;
-    const OP5_ALU3 = { XOR: 0b00001, OR: 0b00010, AND: 0b00011, SBB: 0b10110, ADC: 0b10111 };
-    const OP5_ROTN = { NOT: 0b00000, ROL: 0b10100, ROR: 0b10101 };
-    const OP5_JUMP = { JZ: 0b01100, JC: 0b01101, JMP: 0b11110 };
+    const toHexWord = (w) =>
+        (typeof window.sweet16ToHexWord === "function")
+            ? window.sweet16ToHexWord(w)
+            : `0x${(w & 0xFFFF).toString(16).toUpperCase().padStart(4, "0")}`;
     function encodeInstructionWord(pc, op, args) {
-        function encALU3(code, rd, rs, rt) {
-            let w = (code << 11);
-            w |= ((rd >> 3) & 1) << 15;
-            w |= ((rs >> 3) & 1) << 14;
-            w |= ((rt >> 3) & 1) << 13;
-            w |= ((rd & 0b111) << 8);
-            w |= ((rs & 0b111) << 3);
-            w |= (rt & 0b111);
-            return w;
+        if (typeof window.encodeSweet16Word === "function") {
+            return window.encodeSweet16Word(pc, op, args);
         }
-        function encUnary(code, rd, rs) {
-            let w = (code << 11);
-            w |= (rd & 0b111) << 8;
-            w |= ((rd >> 3) & 1) << 7;
-            w |= (rs & 0xf) << 3;
-            return w;
-        }
-        function encSTO(rs, rt) {
-            let w = (0b01010 << 11);
-            w |= ((rs >> 3) & 1) << 7;
-            w |= ((rt >> 3) & 1) << 6;
-            w |= (rs & 0b111) << 3;
-            w |= (rt & 0b111);
-            return w;
-        }
-        function encLDD(rd, rs) {
-            let w = (0b01011 << 11);
-            w |= (rd & 0b111) << 8;
-            w |= ((rd >> 3) & 1) << 7;
-            w |= (rs & 0xf) << 3;
-            return w;
-        }
-        function encLD(isHigh, rd, imm8) {
-            const op5 = isHigh ? 0b01001 : 0b01000;
-            let w = (op5 << 11);
-            w |= (rd & 0b111) << 8;
-            w |= (imm8 & 0xff);
-            return w;
-        }
-        function encAbsJump(code, P) {
-            return (code << 11) | (P & 0x7ff);
-        }
-        function encBRA(cond3, target) {
-            const O = (target - pc) & 0xff;
-            return (0b11111 << 11) | ((cond3 & 0x7) << 8) | O;
-        }
-
-        switch (op) {
-            case "XOR": case "OR": case "AND": case "SBB": case "ADC":
-                return encALU3(OP5_ALU3[op], args[0], args[1], args[2]);
-            case "NOT": case "ROL": case "ROR": {
-                const rd = args[0];
-                const rs = args.length > 1 ? args[1] : rd;
-                return encUnary(OP5_ROTN[op], rd, rs);
-            }
-            case "STO":
-            case "OUT":
-                return encSTO(args[0], args[1]);
-            case "LDD":
-            case "IN":
-                return encLDD(args[0], args[1]);
-            case "LDL":
-                return encLD(false, args[0], args[1] & 0xff);
-            case "LDH":
-                return encLD(true, args[0], args[1] & 0xff);
-            case "JZ": case "JC": case "JMP":
-                return encAbsJump(OP5_JUMP[op], args[0]);
-            case "BRA":
-                return encBRA(args[0], args[1]);
-            case "HLT":
-                return 0b11111 << 11;
-            default:
-                return null;
-        }
+        return null;
     }
 
     const lines = [];
@@ -694,7 +624,12 @@ function buildProgramDisplayHtml() {
         const op = instruction?.op || '';
         const line = `${op}${argsHex ? ` ${argsHex}` : ''}${argsDec ? ` (${argsDec})` : ''}`;
         const encodedWord = encodeInstructionWord(i, op, args);
-        const machineCode = encodedWord == null ? "--" : toHexWord(encodedWord);
+        const machineCode =
+            typeof window.formatSweet16MachineCode === "function"
+                ? window.formatSweet16MachineCode(encodedWord)
+                : (encodedWord == null
+                    ? (window.sweet16NoMachineCode || "NONE")
+                    : toHexWord(encodedWord));
         const isIp = (i === instructionPointer);
         const addressCell = `${address}${isIp ? " [IP]" : ""}`;
         lines.push(

@@ -334,105 +334,29 @@ function showResetDialog({ onKeep, onClear }) {
 }
 
 /* -----------------------------
-   Machine code encoder (index2 philosophy: 16-bit hex per instruction)
-   instr_set_full.pdf (see Sample_instructions.js)
+   Machine code export — uses machineCode.js (instr_set_full bit layout)
 --------------------------------*/
 function encodeProgramToHex(program) {
   if (!program || program.length === 0) return "";
   const header = "v2.0 raw";
-  const toHex = (w) => "0x" + (w & 0xffff).toString(16).toUpperCase().padStart(4, "0");
-  const OP5_ALU3 = { XOR: 0b00001, OR: 0b00010, AND: 0b00011, SBB: 0b10110, ADC: 0b10111 };
-  const OP5_ROTN = { NOT: 0b00000, ROL: 0b10100, ROR: 0b10101 };
-  const OP5_JUMP = { JZ: 0b01100, JC: 0b01101, JMP: 0b11110 };
-  function encALU3(op, rd, rs, rt) {
-    const opCode = OP5_ALU3[op];
-    let w = (opCode << 11);
-    w |= ((rd >> 3) & 1) << 15;
-    w |= ((rs >> 3) & 1) << 14;
-    w |= ((rt >> 3) & 1) << 13;
-    w |= ((rd & 0b111) << 8);
-    w |= ((rs & 0b111) << 3);
-    w |= (rt & 0b111);
-    return w;
-  }
-  function encUnary(op, rd, rs) {
-    let w = (OP5_ROTN[op] << 11);
-    w |= (rd & 0b111) << 8;
-    w |= ((rd >> 3) & 1) << 7;
-    w |= (rs & 0xf) << 3;
-    return w;
-  }
-  function encSTO(rs, rt) {
-    let w = (0b01010 << 11);
-    w |= ((rs >> 3) & 1) << 7;
-    w |= ((rt >> 3) & 1) << 6;
-    w |= (rs & 0b111) << 3;
-    w |= (rt & 0b111);
-    return w;
-  }
-  function encLDD(rd, rs) {
-    let w = (0b01011 << 11);
-    w |= (rd & 0b111) << 8;
-    w |= ((rd >> 3) & 1) << 7;
-    w |= (rs & 0xf) << 3;
-    return w;
-  }
-  function encLD(isHigh, rd, imm8) {
-    const op5 = isHigh ? 0b01001 : 0b01000;
-    let w = (op5 << 11);
-    w |= (rd & 0b111) << 8;
-    w |= (imm8 & 0xff);
-    return w;
-  }
-  function encAbsJump(op, P) {
-    const p = P & 0x7ff;
-    return (OP5_JUMP[op] << 11) | p;
-  }
-  function encBRA(cond3, pc, target) {
-    const O = (target - pc) & 0xff;
-    return (0b11111 << 11) | ((cond3 & 0x7) << 8) | O;
-  }
+  const toHex =
+    typeof window.sweet16ToHexWord === "function"
+      ? window.sweet16ToHexWord
+      : (w) => "0x" + (w & 0xffff).toString(16).toUpperCase().padStart(4, "0");
+  const encode =
+    typeof window.encodeSweet16Word === "function" ? window.encodeSweet16Word : null;
   const out = [];
   for (let pc = 0; pc < program.length; pc++) {
     const { op, args } = program[pc];
     try {
-      let w;
-      switch (op) {
-        case "XOR": case "OR": case "AND": case "SBB": case "ADC":
-          w = encALU3(op, args[0], args[1], args[2]);
-          break;
-        case "NOT": case "ROL": case "ROR": {
-          const rd = args[0];
-          const rs = args.length > 1 ? args[1] : rd;
-          w = encUnary(op, rd, rs);
-          break;
-        }
-        case "STO":
-        case "OUT":
-          w = encSTO(args[0], args[1]);
-          break;
-        case "LDD":
-        case "IN":
-          w = encLDD(args[0], args[1]);
-          break;
-        case "LDL":
-          w = encLD(false, args[0], args[1] & 0xff);
-          break;
-        case "LDH":
-          w = encLD(true, args[0], args[1] & 0xff);
-          break;
-        case "JZ": case "JC": case "JMP":
-          w = encAbsJump(op, args[0]);
-          break;
-        case "BRA":
-          w = encBRA(args[0], pc, args[1]);
-          break;
-        case "HLT":
-          w = 0b11111 << 11;
-          break;
-        default:
-          out.push(`# ${op} (unsupported for hex)`);
-          continue;
+      if (!encode) {
+        out.push(`# ${op} (encoder not loaded)`);
+        continue;
+      }
+      const w = encode(pc, op, args);
+      if (w == null) {
+        out.push(window.sweet16NoMachineCode || "NONE");
+        continue;
       }
       out.push(toHex(w));
     } catch (e) {
@@ -685,7 +609,7 @@ document.addEventListener("DOMContentLoaded", () => {
     const machineCells = Array.from(document.querySelectorAll("#InMemoryProgram .memory-program-machine"));
     const codes = machineCells
       .map(el => (el.textContent || "").trim())
-      .filter(code => code && code !== "--");
+      .filter(code => code && code !== "--" && code !== "NONE" && /^0x/i.test(code));
     if (codes.length === 0) return "";
     return ["v2.0 raw", ...codes].join("\n");
   }
