@@ -76,6 +76,16 @@ Published demo: [https://unifrankfurt-ara.github.io/Sweet16_Full_Instruction_set
 - **RISC project** omits `ADD`/`SUB`/stack/I/O bit-ops; uses `ADC`/`SBB` and teaching-specific `STR` idioms.
 - **Extended project** adds this full set **plus** simulator-only instructions (`MUL`, `DIV`, `CMP`, `STOA`, …) — use Extended only when you need those extras.
 
+### Memory syntax (Full vs RISC)
+
+| Operation | **Full** (this project) | **RISC** (`Sweet16-ASM`) |
+|-----------|-------------------------|---------------------------|
+| Store | `STO [Rs], Rt` → Mem[Rs] = Rt | `STO Rn, 0xADDR` |
+| Load | `LDD Rd, [Rs]` → Rd = Mem[Rs] | `LDD Rn, 0xADDR` |
+
+Use `[R0]` / `[R1]` when Mem[00] / Mem[01] are intended (R0 and R1 are fixed at 0 and 1).  
+`STO R2, 0x0000` on **Full** will fail assembly (`Invalid operand … expected type: R`).
+
 ### Contributing / feedback
 
 Issues and pull requests welcome. Please test with the **Full ISA Coverage** sample when changing encoding.

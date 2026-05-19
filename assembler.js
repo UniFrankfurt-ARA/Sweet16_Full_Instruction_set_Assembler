@@ -129,6 +129,9 @@ const parseOperand = (operand, type, labels) => {
     if (type === "C" && operand.match(/^#0x[0-9A-Fa-f]+$/)) {
         return parseInt(operand.slice(1), 16);
     }
+    if (type === "C" && operand.match(/^#\d+$/)) {
+        return parseInt(operand.slice(1), 10);
+    }
     if (type === "C" && operand.match(/^0x[0-9A-Fa-f]+$/)) {
         return parseInt(operand, 16);
     }

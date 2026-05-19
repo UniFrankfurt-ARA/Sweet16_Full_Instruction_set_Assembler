@@ -92,6 +92,29 @@ function enforceFixedRegisters() {
     registers[1] = 0x0001;
 }
 
+/** Reset CPU, flags, user memory, and stack (keeps loaded `program`). */
+function resetMachineState() {
+    for (let i = 2; i < registers.length; i++) registers[i] = 0;
+    enforceFixedRegisters();
+    carryFlag = 0;
+    zeroFlag = 0;
+    overflowFlag = 0;
+    negativeFlag = 0;
+    halted = false;
+    userHasRunProgram = false;
+    stackReset();
+    UserMemory.fill(0);
+    explicitUserMemoryAddresses.clear();
+    const dynamicMemoryDisplay = document.getElementById('dynamicmemorydisplay');
+    if (dynamicMemoryDisplay) dynamicMemoryDisplay.innerHTML = '';
+    previousIP = null;
+    previousSP = null;
+    previousCF = null;
+    previousZF = null;
+    previousVF = null;
+    previousNF = null;
+}
+
 //UI
 const memoryInput = document.getElementById('dynamicMemoryContentsForUser');
 const addMemoryButton = document.getElementById('addMemoryContent');
@@ -442,7 +465,7 @@ function updateStackDisplay() {
     const stackDisplay = document.getElementById('stackDisplay');
     if (!stackDisplay) return;
     if (!stack.length) {
-        stackDisplay.innerHTML = '<div class="stack-empty">' + _t("stack.empty") + '</div>';
+        stackDisplay.innerHTML = '<motion> stack-empty ...' + _t("stack.empty") + '</div>';
         return;
     }
     stackDisplay.innerHTML = '';
@@ -474,12 +497,10 @@ function loadProgram(assembledProgram) {
         return;
     }
 
+    resetMachineState();
     instructionPointer = 0;
     halted = false;
-    stackReset();
-    enforceFixedRegisters();
-    userHasRunProgram = false; // Reset so register display stays blue until next Run
-    program = assembledProgram; // Use the dynamically assembled program
+    program = assembledProgram;
 
     // Load instructions into memory starting from 0x0000
     let address = 0x0000;
@@ -690,18 +711,6 @@ function updateMemoryDisplay() {
         }
     }
 
-
-
-    // Update the dynamic memory display (new addition)
-    let dynamicMemoryContent = '';
-    for (let i = 0; i < 16; i++) {  // Show first 16 memory addresses, adjust as needed
-        const address = i.toString(16).padStart(4, '0').toUpperCase(); // Hexadecimal address
-        const value = memory[i] || 0x0000;  // Default to 0x0000 if no value is set in memory
-        dynamicMemoryContent += `0x${address}: 0x${value.toString(16).toUpperCase()} (${value})\n`;  // Format memory content
-    }
-
-    // Update the dynamic memory display (textarea)
-    dynamicMemoryDisplay.value = dynamicMemoryContent.trim();
 }
 
 
@@ -980,8 +989,10 @@ function initialize() {
     inputAsmTextarea.value = asmText;
 
     enforceFixedRegisters();
-
-    loadProgram(defaultProgram);
+    program = [];
+    instructionPointer = 0;
+    halted = false;
+    userHasRunProgram = false;
     updateRegisterDisplay();
     updateMemoryDisplay();
     updateControlPanel();

@@ -1,0 +1,89 @@
+
+\documentclass[border=5pt]{standalone}
+\usepackage[utf8]{inputenc}
+\usepackage[table,xcdraw]{xcolor}
+\usepackage{courier}
+
+% allow to format rows in tables
+\newcolumntype{!}{>{\global\let\currentrowstyle\relax}}
+\newcolumntype{^}{>{\currentrowstyle}}
+\newcommand{\rowstyle}[1]{\gdef\currentrowstyle{#1}%
+  #1\ignorespaces
+}
+ 
+\begin{document}
+
+{\ttfamily
+\begin{tabular}{!l^l^l^r^r^r^r^r^r^r^r^r^r^r^r^r^r^r^r^r^r^r^r^r^l^l^l}
+    & \\ % we need this as a hack 
+\multicolumn{3}{!l}{Instruction / Bits} & 15 & 14 & 13 & 12 & 11 && 10 & 9 & 8 && 7 & 6 && 5 & 4 & 3 && 2 & 1 & 0 && {Description} && {N Z C V} \\
+
+\multicolumn{25}{!l}{\hspace{7mm} \textit{Logic, Word (16-bit)}} \\
+\rowstyle{\bfseries} NOT && rd, rs        & 0 & 0 & 0 & 0 & 0 && \multicolumn{3}{^c}{rd}    && X & X && \multicolumn{3}{^c}{rs} && X & X & X                 && {rd = ! rs}       && {* * - -} \\
+\rowstyle{\bfseries} XOR && rd, rs, rt    & 0 & 0 & 0 & 0 & 1 && \multicolumn{3}{^c}{rd}    && X & X && \multicolumn{3}{^c}{rs} && \multicolumn{3}{^c}{rt}   && {rd = rs \^{} rt} && {* * - -} \\
+\rowstyle{\bfseries} OR  && rd, rs, rt    & 0 & 0 & 0 & 1 & 0 && \multicolumn{3}{^c}{rd}    && X & X && \multicolumn{3}{^c}{rs} && \multicolumn{3}{^c}{rt}   && {rd = rs | rt}    && {* * - -} \\
+\rowstyle{\bfseries} AND && rd, rs, rt    & 0 & 0 & 0 & 1 & 1 && \multicolumn{3}{^c}{rd}    && X & X && \multicolumn{3}{^c}{rs} && \multicolumn{3}{^c}{rt}   && {rd = rs \& rt}   && {* * - -} \\
+
+\multicolumn{24}{!l}{\hspace{7mm} \textit{Logic, Bit operations (Mask Bit, Invert Bit, Set Bit, Clear Bit)}} \\
+                     MKB && rd, rs, B     & 1 & 0 & 0 & 0 & 0 && \multicolumn{3}{^c}{rd}    && X & B3 && \multicolumn{3}{^c}{rs} && \multicolumn{3}{^c}{B2..0} && rd = rs \& (1 \textless{}\textless B)               && {* * - -} \\
+                     INB && rd, rs, B     & 1 & 0 & 0 & 0 & 1 && \multicolumn{3}{^c}{rd}    && X & B3 && \multicolumn{3}{^c}{rs} && \multicolumn{3}{^c}{B2..0} && rd = rs \textasciicircum (1 \textless{}\textless B) && {* * - -} \\
+                     SEB && rd, rs, B     & 1 & 0 & 0 & 1 & 0 && \multicolumn{3}{^c}{rd}    && X & B3 && \multicolumn{3}{^c}{rs} && \multicolumn{3}{^c}{B2..0} && rd = rs | (1 \textless{}\textless B)                && {* * - -} \\
+                     CLB && rd, rs, B     & 1 & 0 & 0 & 1 & 1 && \multicolumn{3}{^c}{rd}    && X & B3 && \multicolumn{3}{^c}{rs} && \multicolumn{3}{^c}{B2..0} && rd = rs \& $\sim$(1 \textless{}\textless{} B)       && {* * - -} \\
+
+\multicolumn{24}{!l}{\hspace{7mm} \textit{Shift and roll}} \\
+                     SHL && rd, rs        & 0 & 0 & 1 & 0 & 0 && \multicolumn{3}{^c}{rd}    && X & X && \multicolumn{3}{^c}{rs} && X & X & X                   && rd = rs \textless{}\textless 1        && {* * * *} \\
+                     SHR && rd, rs        & 0 & 0 & 1 & 0 & 1 && \multicolumn{3}{^c}{rd}    && X & X && \multicolumn{3}{^c}{rs} && X & X & X                   && rd = rs \textgreater{}\textgreater 1  && {* * * *} \\
+\rowstyle{\bfseries} ROL && rd, rs        & 1 & 0 & 1 & 0 & 0 && \multicolumn{3}{^c}{rd}    && X & X && \multicolumn{3}{^c}{rs} && X & X & X                   && {rd = (rs{[}14..0{]}, Carry)}         && {* * * *} \\
+\rowstyle{\bfseries} ROR && rd, rs        & 1 & 0 & 1 & 0 & 1 && \multicolumn{3}{^c}{rd}    && X & X && \multicolumn{3}{^c}{rs} && X & X & X                   && {rd = (Carry, rs{[}15..1{]})}         && {* * * *} \\
+
+\multicolumn{24}{!l}{\hspace{7mm} \textit{Arithmetic (without/with Carry)}} \\
+                     SUB && rd, rs, rt    & 0 & 0 & 1 & 1 & 0 && \multicolumn{3}{^c}{rd}    && X & X && \multicolumn{3}{^c}{rs} && \multicolumn{3}{^c}{rt}     && rd = rs - rt                          && {* * * *} \\
+                     ADD && rd, rs, rt    & 0 & 0 & 1 & 1 & 1 && \multicolumn{3}{^c}{rd}    && X & X && \multicolumn{3}{^c}{rs} && \multicolumn{3}{^c}{rt}     && rd = rs + rt                          && {* * * *} \\
+\rowstyle{\bfseries} SBB && rd, rs, rt    & 1 & 0 & 1 & 1 & 0 && \multicolumn{3}{^c}{rd}    && X & X && \multicolumn{3}{^c}{rs} && \multicolumn{3}{^c}{rt}     && {rd = rs - rt - Carry}                && {* * * *} \\
+\rowstyle{\bfseries} ADC && rd, rs, rt    & 1 & 0 & 1 & 1 & 1 && \multicolumn{3}{^c}{rd}    && X & X && \multicolumn{3}{^c}{rs} && \multicolumn{3}{^c}{rt}     && {rd = rs + rt + Carry}                && {* * * *} \\
+
+\multicolumn{24}{!l}{\hspace{7mm} \textit{Load register with immediate data (8 bit)}} \\
+\rowstyle{\bfseries} LDL && rd, \#0xYY    & x & 1 & 0 & 0 & 0 && \multicolumn{3}{^c}{rd}    && \multicolumn{10}{^c}{- DATA (8 bit) -}                        && {rd =  (rd \& 0xFF00) | 0x00YY}   && {- - - -} \\
+\rowstyle{\bfseries} LDH && rd, \#0xYY    & x & 1 & 0 & 0 & 1 && \multicolumn{3}{^c}{rd}    && \multicolumn{10}{^c}{- DATA (8 bit) -}                        && {rd =  (rd \& 0x00FF) | 0xYY00}   && {- - - -} \\
+
+\multicolumn{24}{!l}{\hspace{7mm} \textit{Internal Memory}} \\
+\rowstyle{\bfseries} STO && {[}rs{]}, rt  & 0 & 1 & 0 & 1 & 0 && 0 & 0 & 0                  && 0 & X && \multicolumn{3}{^c}{rs} && \multicolumn{3}{^c}{rt}   && {Mem{[}rs{]} = rt}   && {- - - -} \\
+\rowstyle{\bfseries} LDD && rd, {[}rs{]}  & 0 & 1 & 0 & 1 & 1 && \multicolumn{3}{^c}{rd}    && 0 & X && \multicolumn{3}{^c}{rs} && X & X & X                 && {rd = Mem{[}rs{]}}   && {- - - -} \\
+
+\multicolumn{24}{!l}{\hspace{7mm} \textit{External Memory or I/O}} \\
+                     OUT && {[}rs{]}, rt  & 0 & 1 & 0 & 1 & 0 && 0 & 0 & 0                  && 1 & X && \multicolumn{3}{^c}{rs}   && \multicolumn{3}{^c}{rt} && IO{[}rs{]} = rs      && {- - - -} \\
+                     IN  && rd, {[}rs{]}  & 0 & 1 & 0 & 1 & 1 && \multicolumn{3}{^c}{rd}    && 1 & X && \multicolumn{3}{^c}{rs}   && X & X & X               && rd = IO{[}rs{]}      && {- - - -} \\
+
+\multicolumn{24}{!l}{\hspace{7mm} \textit{Stack (Stack space occupies last 16 or 32 addresses in data memory)}} \\
+                     PSH && rt            & 1 & 1 & 0 & 1 & 0 && X & X & X                  && X & X && X & X & X                 && \multicolumn{3}{^c}{rt} && Mem{[}SP+1{]} = rt, SP++  && {- - - -} \\
+                     POP && rd            & 1 & 1 & 0 & 1 & 1 && \multicolumn{3}{^c}{rd}    && X & X && X & X & X                 && X & X & X               && rd = Mem{[}SP{]}, SP--    && {- - - -} \\
+ 
+\multicolumn{24}{!l}{\hspace{7mm} \textit{Jumps}} \\
+\rowstyle{\bfseries} JZ && NewPC          & 0 & 1 & 1 & 0 & 0 && \multicolumn{14}{^c}{{- NewPC (11 bit) -}}                                    && PC = NewPC if Zero           && {- - - -} \\
+\rowstyle{\bfseries} JC && NewPC          & 0 & 1 & 1 & 0 & 1 && \multicolumn{14}{^c}{{- NewPC (11 bit) -}}                                    && PC = NewPC if Carry          && {- - - -} \\
+                     JNZ && NewPC         & 1 & 1 & 1 & 0 & 0 && \multicolumn{14}{^c}{- NewPC (11 bit) -}                                      && PC = NewPC if not Zero       && {- - - -} \\
+                     JNC && NewPC         & 1 & 1 & 1 & 0 & 1 && \multicolumn{14}{^c}{- NewPC (11 bit) -}                                      && PC = NewPC if not Carry      && {- - - -} \\
+                     JS && NewPC          & 0 & 1 & 1 & 1 & 0 && \multicolumn{14}{^c}{- NewPC (11 bit) -}                                      && PSH PC+1, PC = NewPC         && {- - - -} \\
+\rowstyle{\bfseries} JMP && NewPC         & 1 & 1 & 1 & 1 & 0 && \multicolumn{14}{^c}{{- NewPC (11 bit) -}}                                    && PC = NewPC (unconditional)   && {- - - -} \\
+\rowstyle{\bfseries} BRA && BCOND, OffsetPC & 1 & 1 & 1 & 1 & 1 && \multicolumn{3}{^c}{BCOND}    && \multicolumn{10}{^c}{- OffsetPC (8 bit) -}     && PC += OffsetPC if BCOND  && {- - - -} \\
+                     RTS &&               & 0 & 1 & 1 & 1 & 1 && 0 & X & X                  && 0 & X && X & X & X                 && X & X & w  && POP PC                      && {- - - -} \\
+                     RTI &&               & 0 & 1 & 1 & 1 & 1 && 1 & X & X                  && 1 & X && X & X & X                 && X & X & w  && POP PC, C, Z, N, V          && {* * * *} \\
+
+\multicolumn{24}{!l}{\hspace{7mm} \textit{Interrupts (Aliases)}}\\
+                     SEI &&               & x & 1 & 0 & 0 & 0 && 0 & 0 & 1                  && X & X && X & X & X                 && X & X & 1  && Enable interrupts  (LDL r1,\#1)  && {- - - -} \\
+                     CLI &&               & x & 1 & 0 & 0 & 0 && 0 & 0 & 1                  && X & X && X & X & X                 && X & X & 0  && Disable interrupts (LDL r1,\#0)  && {- - - -} \\
+
+\multicolumn{24}{!l}{\hspace{7mm} \textit{Aliases}}\\
+\rowstyle{\bfseries} NOP &&               & x & 1 & 0 & 0 & 0 && 0 & 0 & 0                  && X & X && X & X & X                 && X & X & X  && No operation (LDL r0, \#XX)  && {- - - -} \\
+\rowstyle{\bfseries} HLT &&               & 1 & 1 & 1 & 1 & 1 && 0 & X & X                  && 0 & 0 && 0 & 0 & 0                 && 0 & 0 & 0  && Halt the program (BRA 0XX 0)  && {- - - -} \\
+& \\
+\multicolumn{24}{!l}{Flags: N (Negative), Z (Zero), C (Carry), V (Overflow); * change, - no change} \\
+\multicolumn{24}{!l}{BCOND: condition for BRA, 0XX unconditional, 100 if Z=1, 101 if C=1, 110 if V=1, 111 if N=1} \\
+\multicolumn{24}{!l}{OffsetPC: 8 bit two’s complement} \\
+\multicolumn{24}{!l}{Registers: R0=0, R1=1, R2 ... R7 (16-bit)} \\
+\multicolumn{24}{!l}{Power Up: 0 $\rightarrow$ PC; 0 $\rightarrow$ N, Z, C, V; 0 $\rightarrow$ R2..R7; 0 $\rightarrow$ SP; Disable interrupts} \\
+\multicolumn{24}{!l}{IRQ: C \& Z \&  N \& V \& NextPC $\rightarrow$ Stack; 1 $\rightarrow$ PC; no further IRQ possible until RTI}
+\end{tabular}%
+} %\ttfamily
+ 
+\end{document}
