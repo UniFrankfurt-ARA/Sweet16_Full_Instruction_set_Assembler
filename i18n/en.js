@@ -37,14 +37,15 @@
       download: "Download"
     },
     speed: { label: "Speed" },
-    status: { ip: "IP" },
+    status: { ip: "IP", sp: "SP" },
     flag: {
       cf: "CF (Carry Flag)",
       zf: "ZF (Zero Flag)",
       of: "OF (Overflow Flag)",
       nf: "NF (Negative Flag)"
     },
-    card: { userMemory: "Data Memory" },
+    card: { userMemory: "Data Memory", stack: "Stack" },
+    stack: { empty: "(empty)" },
     instr: {
       syntax: "Syntax",
       description: "Description",

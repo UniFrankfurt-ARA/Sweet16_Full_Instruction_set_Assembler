@@ -37,14 +37,15 @@
       download: "Herunterladen"
     },
     speed: { label: "Geschwindigkeit" },
-    status: { ip: "IP" },
+    status: { ip: "IP", sp: "SP" },
     flag: {
       cf: "CF (Übertrags-Flag)",
       zf: "ZF (Null-Flag)",
       of: "OF (Überlauf-Flag)",
       nf: "NF (Negativ-Flag)"
     },
-    card: { userMemory: "Datenspeicher" },
+    card: { userMemory: "Datenspeicher", stack: "Stapel" },
+    stack: { empty: "(leer)" },
     instr: {
       syntax: "Syntax",
       description: "Beschreibung",

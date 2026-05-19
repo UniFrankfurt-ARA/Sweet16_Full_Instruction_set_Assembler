@@ -102,13 +102,26 @@
           </div>
         </div>
 
-        <div class="program-display-card viewer-program-area" id="viewerProgramArea">
-          <div id="InMemoryProgram" class="in-memory-program"></div>
-        </div>
-
-        <div class="viewer-info-area hidden" id="viewerInfoArea">
-          <div class="tab-content-wrap">
-            <div id="tabContent" class="tab-content"></div>
+        <div class="program-display-card viewer-main-body" id="viewerMainBody">
+          <div class="program-memory-row">
+            <div class="viewer-main-pane">
+              <div class="viewer-program-area" id="viewerProgramArea">
+                <div id="InMemoryProgram" class="in-memory-program"></div>
+              </div>
+              <div class="viewer-info-area hidden" id="viewerInfoArea">
+                <div class="tab-content-wrap">
+                  <div id="tabContent" class="tab-content"></div>
+                </div>
+              </div>
+            </div>
+            <aside class="program-stack-panel" aria-label="Stack">
+              <h3 class="program-stack-title" data-i18n="card.stack">Stack</h3>
+              <div class="program-stack-sp">
+                <span class="status-label" data-i18n="status.sp">SP</span>
+                <span class="status-value" id="spDisplay">0xFFFF</span>
+              </div>
+              <div id="stackDisplay" class="stack-display-side" aria-live="polite"></div>
+            </aside>
           </div>
         </div>
 

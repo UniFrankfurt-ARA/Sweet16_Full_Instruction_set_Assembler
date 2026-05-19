@@ -21,6 +21,12 @@ const REAR = 0xDEEE;
 let stack = [];
 let stackPointer = FRONT;
 
+function stackReset() {
+    stack = [];
+    stackPointer = FRONT;
+    updateStackDisplay();
+}
+
 const registers = new Uint16Array(8); // 8 registers (R0 to R7)
 let instructionPointer = 0x0000; // Program Counter (IP) starts at 0x0000
 let carryFlag = 0;    // Carry flag (0: no carry, 1: carry)
@@ -436,14 +442,15 @@ function updateStackDisplay() {
     const stackDisplay = document.getElementById('stackDisplay');
     if (!stackDisplay) return;
     if (!stack.length) {
-        stackDisplay.innerHTML = '';
+        stackDisplay.innerHTML = '<div class="stack-empty">' + _t("stack.empty") + '</div>';
         return;
     }
     stackDisplay.innerHTML = '';
     for (let i = stack.length - 1; i >= 0; i--) {
         const { address, contents } = stack[i];
         const row = document.createElement('div');
-        row.textContent = `0x${address.toString(16).toUpperCase()}: 0x${contents.toString(16).toUpperCase()} (${contents})`;
+        row.className = 'stack-row' + (i === stack.length - 1 ? ' stack-top' : '');
+        row.textContent = `0x${address.toString(16).toUpperCase().padStart(4, '0')}: 0x${(contents & 0xFFFF).toString(16).toUpperCase().padStart(4, '0')} (${contents})`;
         stackDisplay.appendChild(row);
     }
 }
@@ -469,6 +476,7 @@ function loadProgram(assembledProgram) {
 
     instructionPointer = 0;
     halted = false;
+    stackReset();
     enforceFixedRegisters();
     userHasRunProgram = false; // Reset so register display stays blue until next Run
     program = assembledProgram; // Use the dynamically assembled program
@@ -505,6 +513,7 @@ function loadProgram(assembledProgram) {
 
     // Prime the source indicator at IP = 0
     updateSourceDisplay();
+    updateControlPanel();
 }
 
 
@@ -698,6 +707,7 @@ function updateMemoryDisplay() {
 
 // Previous values to detect changes
 let previousIP = null;
+let previousSP = null;
 let previousCF = null;
 let previousZF = null;
 let previousVF = null;
@@ -705,6 +715,7 @@ let previousNF = null;
 
 function updateControlPanel() {
     const ipElement = document.getElementById('ipDisplay');
+    const spElement = document.getElementById('spDisplay');
     const cfElement = document.getElementById('carryFlagDisplay');
     const zfElement = document.getElementById('zeroFlagDisplay');
     const vfElement = document.getElementById('overflowFlagDisplay');
@@ -715,6 +726,13 @@ function updateControlPanel() {
         ipElement.textContent = newIP;
         flashElement('ipDisplay');
         previousIP = newIP;
+    }
+
+    const newSP = '0x' + stackPointer.toString(16).padStart(4, '0').toUpperCase();
+    if (previousSP !== newSP && spElement) {
+        spElement.textContent = newSP;
+        flashElement('spDisplay');
+        previousSP = newSP;
     }
 
     const newCF = carryFlag === 1 ? '1' : '0';
@@ -939,6 +957,7 @@ function initialize() {
         negativeFlag = 0;
         halted = false;
         userHasRunProgram = false;
+        stackReset();
         enforceFixedRegisters();
         updateRegisterDisplay();
         updateMemoryDisplay();

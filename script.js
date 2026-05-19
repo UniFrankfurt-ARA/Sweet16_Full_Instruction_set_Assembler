@@ -482,6 +482,9 @@ document.addEventListener("DOMContentLoaded", () => {
         : assembledProgram.sourceMap || [];
 
       loadProgram(assembledProgram);
+      const memTab = $("tabInMemoryData");
+      if (memTab) setViewerTab(memTab);
+      showProgramArea();
       refreshProgramDisplay();
     } catch (error) {
       alert(t("msg.assemblyError") + " " + error.message);
@@ -628,6 +631,8 @@ document.addEventListener("DOMContentLoaded", () => {
     if (machineCodeActions) machineCodeActions.style.display = "flex";
     if (typeof updateMemoryDisplay === "function") updateMemoryDisplay();
     else if (inMemoryProgramEl) inMemoryProgramEl.textContent = window.currentProgramDisplayText || t("msg.noProgramInMemory");
+    if (typeof updateStackDisplay === "function") updateStackDisplay();
+    if (typeof updateControlPanel === "function") updateControlPanel();
   }
 
   // Copy Machine Code (second column only)
@@ -704,6 +709,10 @@ document.addEventListener("DOMContentLoaded", () => {
 
   // Initial content & small effects
   loadSamplePrograms();
+  showProgramArea();
+  const initMemTab = $("tabInMemoryData");
+  if (initMemTab) setViewerTab(initMemTab);
+  if (typeof updateStackDisplay === "function") updateStackDisplay();
   flashButton("Convert");    // flash Convert on page load
 
   // Blink the Manual tab briefly
