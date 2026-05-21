@@ -808,16 +808,32 @@ function _runAllStep() {
 
     executeNext(); // run one instruction (handles halt/done detection internally)
 
-    // Stop and unschedule when done
+    // Stop and unschedule when done (do NOT rewind PC here — avoids re-init overwriting RAM before user inspects)
     if (halted || instructionPointer >= (program?.length ?? 0)) {
-        runAllActive = false;
-        resetForRerun();
+        finalizeRunAllStopped();
         return;
     }
 
     if (runAllActive) {
         setTimeout(_runAllStep, window.runAllDelay || 100);
     }
+}
+
+/**
+ * UI after Run-All completes (HLT or past end): keep IP past last instruction — no automatic rewind.
+ * Registers and user memory unchanged; Run Next arm will rewind to PC=0 without executing.
+ */
+function finalizeRunAllStopped() {
+    runAllActive = false;
+    runAllPaused = false;
+    window.showToast?.(_t("msg.programFinishedAfterRun"));
+    updateMemoryDisplay();
+    updateSourceDisplay();
+    updateControlPanel();
+    const btnNext = document.getElementById('RUN_NEXT');
+    const btnAll  = document.getElementById('RUN_ALL');
+    if (btnNext) { btnNext.textContent = _t("btn.reRunNext"); btnNext.classList.add('rerun-btn'); btnNext.disabled = false; }
+    if (btnAll)  { btnAll.textContent  = _t("btn.reRunAll");  btnAll.classList.add('rerun-btn'); btnAll.classList.remove('pause-btn', 'continue-btn'); }
 }
 
 function resetForRerun() {
@@ -898,8 +914,26 @@ window.isRunAllPaused = function () { return runAllPaused; };
 
 function executeNext() {
 
-    if (halted || instructionPointer >= program.length) {
-        const reason = halted ? _t("msg.hltReached") : _t("msg.endOfProgram");
+    // PC beyond last instruction (e.g. after HLT fetched): rewind to start without fetching — preserves RAM/register state
+    if (program.length > 0 && instructionPointer >= program.length) {
+        instructionPointer = 0;
+        halted = false;
+        updateMemoryDisplay();
+        updateSourceDisplay();
+        updateControlPanel();
+        // resetRunButtonLabels clears runAllActive — skip during Run All so rewind-only step can continue.
+        if (!runAllActive) {
+            window.resetRunButtonLabels?.();
+        }
+        window.refreshSimulatorLabels?.();
+        if (!runAllActive && !runAllPaused) {
+            window.showToast?.(_t("msg.rewindPcNoExecute"));
+        }
+        return;
+    }
+
+    if (halted) {
+        const reason = _t("msg.hltReached");
         resetForRerun();
         window.showToast?.(_t("msg.programFinished", { reason: reason }));
         return;
